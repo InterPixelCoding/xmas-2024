@@ -19,14 +19,13 @@ h1, h2 {filter: drop-shadow(0 .25rem .125rem black)}
 
 .central-wrapper {
     position: absolute;
-    inset: 2.5rem;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 2.5rem;
+    padding: 2.5rem;
+    margin-bottom: 5rem;
 }
-
-.central-wrapper > .container:last-child {min-width: 25rem;}
 
 .central-wrapper > .container {
     position: relative;
@@ -57,6 +56,10 @@ h1, h2 {filter: drop-shadow(0 .25rem .125rem black)}
 
 .geonodes {
     width: 20%;
+}
+
+.tree-result {
+    width: 30%;
 }
 
 @keyframes fade-in { to { opacity: 1; } }
