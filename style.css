@@ -154,6 +154,34 @@ button.embossed, button.debossed {
                 inset var(--shadow-offset) var(--shadow-offset) calc( 2.5 * var(--shadow-offset)) rgba(0, 0, 0, 0.5);
 }
 
+@media (max-width: 85em) {
+    .neu-panel > * {text-align: center; margin-left: 0;}
+    h1 {line-height: 95%; font-size: 3rem;}
+    .neu-panel {
+        width: 85vw;
+        min-width: unset;
+    }
+
+    button {font-size: 2rem;}
+}
+
+@media (max-width: 35em) {
+    .neu-panel {
+        padding: 15% 7.5%;
+        max-height: 90vh;
+        overflow: auto;
+        scroll-behavior: smooth;
+    }
+    .glowing-source {
+        width: 1rem;
+        height: 1.5rem;
+    }
+    h1 {font-size: 2.5rem;}
+    p {font-size: 1rem;}
+    h3 {font-size: 1.5rem;}
+    button {font-size: 1.75rem;}
+}
+
 @keyframes slide-in {
     from {
         transform: rotateX(100deg) translateY(-200%) translateZ(-2000px) translate(-50%, -50%);;
@@ -167,23 +195,23 @@ button.embossed, button.debossed {
 @keyframes glow-move {
     0% {
         left: 0%;
-        top: 0%;
+        top: -7.5%;
     }
-    40%{
+    40% {
         left: 100%;
-        top: 0%;
+        top: -7.5%;
     }
-    50%{
+    50% {
         left: 100%;
-        top: 100%;
+        top: 107.5%;
     }
-    90%{
+    90% {
         left: 0%;
-        top: 100%;
+        top: 107.5%;
     }
-    100%{
+    100% {
         left: 0%;
-        top: 0%;
+        top: -7.5%;
     }
     
 }

@@ -145,6 +145,7 @@ window.addEventListener("DOMContentLoaded", () => {
                     promise = typewriter(container.querySelector('h3'), null, 100 * speed, 50, 0, promise);
                     promise.then(() => {
                         container.style.animation = 'unset';
+                        container.scrollTop = container.scrollHeight;
                         fix_size(button)
                         activate(button);
                         button.addEventListener("click", () => {
