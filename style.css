@@ -22,18 +22,29 @@ body {
     overflow-x: hidden;
     display: grid;
     place-content: center;
-    perspective: 200px;
+    perspective: 500px;
+}
+
+.neu-panel.hidden {
+    transform: rotateX(-20deg) translateY(-100%) translateZ(-200px) translate(-50%, -50%);
+}
+
+.neu-panel.active {
+    transform: rotateX(0deg) translateY(0%) translateZ(0px) translate(-50%, -50%);
 }
 
 .hidden {
     opacity: 0;
-    max-height: 0px;
-    transform: translateY(100%);
+    transform: rotateX(-20deg) translateY(-100%) translateZ(-200px);
+}
+
+*:not(:is(div)).hidden {
+    transform: rotateX(-20deg) translateY(-100%) translateZ(1000px);
 }
 
 .active {
     opacity: 1;
-    transform: translateY(0%);
+    transform: rotateX(0deg) translateY(0%) translateZ(0px)
 }
 
 h1, h2, h3, p {
@@ -49,23 +60,29 @@ p {
     font-weight: 100; 
     margin-left: 3px;
     line-height: 1.65rem;
+    width: 100%;
+    text-align: justify;
     transition: height 2s ease;
 }
 
 h3 {font-size: 1.75rem; font-weight: 200;}
 
 .neu-panel {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     width: 70vw;
     min-width: 70rem;
     display: flex;
     height: fit-content;
     flex-direction: column;
-    gap: 3rem;
+    gap: 2.5rem;
     background: var(--dark-col);
     border-radius: var(--border-radius);
     padding: 7.5% 12.5%;
     transform-style: preserve-3d;
-    transition: height 1s ease;
+    transition: all 500ms ease;
 
     animation: slide-in 1s ease forwards;
 }
@@ -82,7 +99,7 @@ button {
     font-size: 2.5rem;
     cursor: pointer;
     text-align: center;
-    transition: all 250ms ease;
+    transition: all 2s ease;
 }
 
 button.embossed:hover, button.debossed:hover {
@@ -105,11 +122,11 @@ button.embossed, button.debossed {
 
 @keyframes slide-in {
     from {
-        transform: rotateX(100deg) translateY(-200%) translateZ(-2000px);
+        transform: rotateX(100deg) translateY(-200%) translateZ(-2000px) translate(-50%, -50%);;
     }   
 
     to {
-        transform: rotateX(0deg) translateY(0%) translateZ(0px);
+        transform: rotateX(0deg) translateY(0%) translateZ(0px) translate(-50%, -50%);;
     }
 }
 
