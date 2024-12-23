@@ -6,7 +6,29 @@ function animation_collision_logic() {
     }, 2000);
 }
 
-const test = true;
+function el(str, container) {
+    str = str.replace(" ", "");
+    let arr = [];
+    let el = {};
+
+        try {
+            arr = str.split(',');
+            arr.forEach(function(item, index) {
+                if(index === 0) {
+                    el = document.createElement(item)
+                } else {
+                    el.classList.add(item)
+                }
+            })
+        } catch(err) {
+            el = document.createElement(str);
+        }
+
+    if(container) {container.appendChild(el)}
+    return el;
+}
+
+const test = false;
 
 async function fetch_data(sheet_name, api_key = "AIzaSyAM07AIfBXXRU0Y8MbpzySSVtCAG3xjHr0", link = "https://docs.google.com/spreadsheets/d/1zjRNYIoJHSVrsQmtPnAIGiT7ER851TkQE9bgxqoL86Q/edit?usp=sharing") {
     try {
@@ -30,6 +52,11 @@ async function fetch_data(sheet_name, api_key = "AIzaSyAM07AIfBXXRU0Y8MbpzySSVtC
     } catch (error) {
         throw error;
     }
+}
+
+function fix_size(el) {
+    el.style.width = el.offsetWidth + "px";
+    el.style.height = el.offsetHeight + "px";
 }
 
 function error() {console.error(error, this)}
@@ -66,6 +93,19 @@ function typewriter(el, str, speed, pause, initial_delay, previous_promise = Pro
     });
 }
 
+function glow(glow_no, els=document.querySelectorAll('.glow')) {
+    els.forEach(element => {
+        const glow_container = el("div, glowing-container", element);
+        glow_container.style.width = (element.offsetWidth * 0.9) + "px";
+        for(let i = 0; i<glow_no; i++) {
+            const glow_el = el("div, glowing-source", glow_container);
+            glow_el.style.animation = `glow-move 2s ${i * 25}ms linear infinite`;
+            glow_el.style.opacity = ((100 / glow_no) * (glow_no - i)) / 100;
+        }
+    })
+}
+
+glow(15);
 
 function activate(el) {el.classList.remove('hidden'); el.classList.add('active');}
 
@@ -105,6 +145,7 @@ window.addEventListener("DOMContentLoaded", () => {
                     promise = typewriter(container.querySelector('h3'), null, 100 * speed, 50, 0, promise);
                     promise.then(() => {
                         container.style.animation = 'unset';
+                        fix_size(button)
                         activate(button);
                         button.addEventListener("click", () => {
                             container.classList.add('hidden');
