@@ -135,25 +135,20 @@ function card(container, obj) {
     return promise;
 }
 
-function press_and_hold(duration, container, grow_type) {
-    let holding = false;
-    let elapsed = 0;
-    let interval = 100;
-    let main_interval = null;
-    let i = 0;
-
+function press_and_hold(duration, container, video, grow_type, video_paths) {
+    let holding = false, elapsed = 0, interval = 100, main_interval = null, previous_elapsed = 0, previous_direction = 'forward';
     const button = el("button,debossed,press-and-hold");
-        button.setAttribute("duration", duration);
-        button.setAttribute("elapsed", elapsed); // Store elapsed as an attribute
-        button.style.setProperty("--shadow-offset", ".25rem");
-        button.style.setProperty("--interval", `${interval}ms`);
+    button.setAttribute("duration", duration);
+    button.setAttribute("elapsed", elapsed);
+    button.style.setProperty("--shadow-offset", ".25rem");
+    button.style.setProperty("--interval", `${interval}ms`);
 
     return new Promise((resolve) => {
         const update_elapsed = (value) => {
-            elapsed = Math.max(0, value); // Prevent negative values
-            let percent = Math.min((elapsed * interval) / duration, 1);
-            button.setAttribute("elapsed", percent); // Update the DOM attribute
-            button.style.setProperty("--elapsed", `${percent * 100}%`)
+            elapsed = Math.max(0, value);
+            let percent = Math.min((elapsed * 100) / duration, 1);
+            button.setAttribute("elapsed", percent);
+            button.style.setProperty("--elapsed", `${percent * 100}%`);
             if (percent === 1) {
                 clearInterval(main_interval);
                 main_interval = null;
@@ -162,34 +157,71 @@ function press_and_hold(duration, container, grow_type) {
         };
 
         const observer = new MutationObserver(() => {
-            console.log(button.getAttribute("elapsed"));
+            // Empty observer for future usage if necessary
         });
 
         observer.observe(button, {
-            attributes: true, // Watch for attribute changes
-            attributeFilter: ["elapsed"], // Only observe the "elapsed" attribute
+            attributes: true,
+            attributeFilter: ["elapsed"],
         });
 
+        let previous_elapsed = elapsed;
+        let previous_direction = 'forward';
+
         const handle_intervals = () => {
-            if (holding) {
-                update_elapsed(elapsed + 1);
-            } else if (elapsed > 0) {
-                update_elapsed(elapsed - 1);
+            if (holding) update_elapsed(elapsed + 1);
+            else if (elapsed > 0) update_elapsed(elapsed - 1);
+
+            const video_duration = video ? video.duration : 1000;
+            const progress_percentage = elapsed / (duration / 100);
+            let current_time = video_duration * progress_percentage;
+
+            let current_direction = 'forward';
+            if (elapsed < previous_elapsed) current_direction = 'reverse';
+
+            const threshold = 0.01;
+            if (Math.abs(elapsed - previous_elapsed) < threshold) current_direction = previous_direction;
+
+            if (current_direction !== previous_direction && elapsed > 0) {
+                if (current_direction === 'forward') {
+                    if (video) {
+                        video.src = video_paths[0];
+                        video.currentTime = Math.max(0, current_time);
+                        if (video.currentTime !== video.duration) video.play();
+                    }
+                } else {
+                    const reversed_current_time = video_duration * (1 - progress_percentage);
+                    if (video) {
+                        video.src = video_paths[1];
+                        video.currentTime = reversed_current_time;
+                        if (video.currentTime !== video.duration) video.play();
+                    }
+                }
+                previous_direction = current_direction;
             }
+
+            if (elapsed > 0 && holding) {
+                if (video && video.paused && video.currentTime < video.duration) video.play();
+            }
+
+            if (elapsed === 0 && holding) {
+                if (video) {
+                    video.src = video_paths[0];
+                    video.currentTime = 0;
+                    video.play();
+                }
+                previous_direction = 'forward';
+            }
+
+            previous_elapsed = elapsed;
         };
 
         main_interval = setInterval(() => {
-            if (elapsed < duration / interval || holding) {
-                handle_intervals();
-            }
+            if (elapsed < duration / 100 || holding) handle_intervals();
         }, interval);
 
         button.addEventListener("mousedown", () => {
-            holding = true; i++
-            if(i === 1) {
-                const video = document.querySelector('.interactive-container > video');
-                video.play();
-            }
+            holding = true;
         });
 
         button.addEventListener("mouseup", () => {
@@ -201,8 +233,7 @@ function press_and_hold(duration, container, grow_type) {
         });
 
         const info_span = el("span");
-            info_span.textContent = `Press and hold to grow ${grow_type}`;
-
+        info_span.textContent = `Press and hold to grow ${grow_type}`;
         const progress = el("div, progress");
 
         button.appendChild(info_span);
@@ -214,11 +245,13 @@ function press_and_hold(duration, container, grow_type) {
 }
 
 function interactive_experience_main(container) {
+    const video = document.querySelector('.interactive-container > video');
+    fix_size(video);
     const video_info = [
-        {grow_type: "trunk", duration: 209}
+        {grow_type: "test", duration: 209}
     ]
     let duration = (video_info[0].duration / FRAME_RATE) * 1000;
-    press_and_hold(duration, container, "trunk").then(response => {
+    press_and_hold(duration, container, video, video_info[0].grow_type, [`./${video_info[0].grow_type}.webm`, `./${video_info[0].grow_type}_reversed.webm`]).then(response => {
         // console.log(response)
     })
 }
@@ -240,11 +273,12 @@ window.addEventListener("DOMContentLoaded", () => {
                     card(container, obj).then(() => {
                         container.style.animation = 'unset';
                         container.scrollTop = container.scrollHeight;
-                        fix_size(button)
+                        fix_size(button);
                         activate(button);
                         button.addEventListener("click", () => {
                             container.classList.add('hidden');
                             document.body.style.setProperty("--dark-col", "#153a29");
+
                             const interactive_container = document.querySelector('.interactive-container');
                             activate(interactive_container);
                             interactive_experience_main(interactive_container);
