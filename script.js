@@ -248,7 +248,7 @@ function interactive_experience_main(container) {
     const video = document.querySelector('.interactive-container > video');
     fix_size(video);
     const video_info = [
-        {grow_type: "test", duration: 209}
+        {grow_type: "test", duration: 381}
     ]
     let duration = (video_info[0].duration / FRAME_RATE) * 1000;
     press_and_hold(duration, container, video, video_info[0].grow_type, [`./${video_info[0].grow_type}.webm`, `./${video_info[0].grow_type}_reversed.webm`]).then(response => {
@@ -277,7 +277,7 @@ window.addEventListener("DOMContentLoaded", () => {
                         activate(button);
                         button.addEventListener("click", () => {
                             container.classList.add('hidden');
-                            document.body.style.setProperty("--dark-col", "#153a29");
+                            document.body.style.setProperty("--dark-col", "#111413");
 
                             const interactive_container = document.querySelector('.interactive-container');
                             activate(interactive_container);
