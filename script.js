@@ -28,7 +28,8 @@ function el(str, container) {
     return el;
 }
 
-const test = false;
+const test = true;
+const FRAME_RATE = 30;
 
 async function fetch_data(sheet_name, api_key = "AIzaSyAM07AIfBXXRU0Y8MbpzySSVtCAG3xjHr0", link = "https://docs.google.com/spreadsheets/d/1zjRNYIoJHSVrsQmtPnAIGiT7ER851TkQE9bgxqoL86Q/edit?usp=sharing") {
     try {
@@ -122,6 +123,106 @@ function activate_children(container, except) {
     })
 }
 
+function card(container, obj) {
+    activate_children(container, 'button');
+    let promise = Promise.resolve();
+    let speed = 1;
+    if(test) {speed = 0.02}
+    promise = typewriter(container.querySelector('h1'), `Dear ${obj.Name},`, 100 * speed, 50, 0, promise);
+    promise = typewriter(container.querySelector('p'), `${obj.Message} I've coded a present for you! Click the button below to start!`, 30 * speed, 75, 0, promise);
+    promise = typewriter(container.querySelector('h3'), null, 100 * speed, 50, 0, promise);
+
+    return promise;
+}
+
+function press_and_hold(duration, container, grow_type) {
+    let holding = false;
+    let elapsed = 0;
+    let interval = 100;
+    let main_interval = null;
+    let i = 0;
+
+    const button = el("button,debossed,press-and-hold");
+        button.setAttribute("duration", duration);
+        button.setAttribute("elapsed", elapsed); // Store elapsed as an attribute
+        button.style.setProperty("--shadow-offset", ".25rem");
+        button.style.setProperty("--interval", `${interval}ms`);
+
+    return new Promise((resolve) => {
+        const update_elapsed = (value) => {
+            elapsed = Math.max(0, value); // Prevent negative values
+            let percent = Math.min((elapsed * interval) / duration, 1);
+            button.setAttribute("elapsed", percent); // Update the DOM attribute
+            button.style.setProperty("--elapsed", `${percent * 100}%`)
+            if (percent === 1) {
+                clearInterval(main_interval);
+                main_interval = null;
+                resolve("Completed!");
+            }
+        };
+
+        const observer = new MutationObserver(() => {
+            console.log(button.getAttribute("elapsed"));
+        });
+
+        observer.observe(button, {
+            attributes: true, // Watch for attribute changes
+            attributeFilter: ["elapsed"], // Only observe the "elapsed" attribute
+        });
+
+        const handle_intervals = () => {
+            if (holding) {
+                update_elapsed(elapsed + 1);
+            } else if (elapsed > 0) {
+                update_elapsed(elapsed - 1);
+            }
+        };
+
+        main_interval = setInterval(() => {
+            if (elapsed < duration / interval || holding) {
+                handle_intervals();
+            }
+        }, interval);
+
+        button.addEventListener("mousedown", () => {
+            holding = true; i++
+            if(i === 1) {
+                const video = document.querySelector('.interactive-container > video');
+                video.play();
+            }
+        });
+
+        button.addEventListener("mouseup", () => {
+            holding = false;
+        });
+
+        button.addEventListener("mouseleave", () => {
+            holding = false;
+        });
+
+        const info_span = el("span");
+            info_span.textContent = `Press and hold to grow ${grow_type}`;
+
+        const progress = el("div, progress");
+
+        button.appendChild(info_span);
+        button.appendChild(progress);
+        container.appendChild(button);
+
+        return button;
+    });
+}
+
+function interactive_experience_main(container) {
+    const video_info = [
+        {grow_type: "trunk", duration: 209}
+    ]
+    let duration = (video_info[0].duration / FRAME_RATE) * 1000;
+    press_and_hold(duration, container, "trunk").then(response => {
+        // console.log(response)
+    })
+}
+
 window.addEventListener("DOMContentLoaded", () => {
     fetch_data("Christmas Cards")
     .then(
@@ -135,22 +236,18 @@ window.addEventListener("DOMContentLoaded", () => {
                 if(obj.Name != null) {
                     const container = document.querySelector('.card-container');
                     const button = container.querySelector('button');
-                    activate_children(container, 'button');
-
-                    let promise = Promise.resolve();
-                    let speed = 1;
-                    if(test) {speed = 0.1}
-                    promise = typewriter(container.querySelector('h1'), `Dear ${obj.Name},`, 100 * speed, 50, 0, promise);
-                    promise = typewriter(container.querySelector('p'), `${obj.Message} I've coded a present for you! Click the button below to start!`, 30 * speed, 75, 0, promise);
-                    promise = typewriter(container.querySelector('h3'), null, 100 * speed, 50, 0, promise);
-                    promise.then(() => {
+                    
+                    card(container, obj).then(() => {
                         container.style.animation = 'unset';
                         container.scrollTop = container.scrollHeight;
                         fix_size(button)
                         activate(button);
                         button.addEventListener("click", () => {
                             container.classList.add('hidden');
-                            activate(document.querySelector('.interactive-container'));
+                            document.body.style.setProperty("--dark-col", "#153a29");
+                            const interactive_container = document.querySelector('.interactive-container');
+                            activate(interactive_container);
+                            interactive_experience_main(interactive_container);
                         })
                     });
                 } else {
