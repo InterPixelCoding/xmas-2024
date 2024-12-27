@@ -252,7 +252,7 @@ function interactive_experience_main(container) {
     ]
     let duration = (video_info[0].duration / FRAME_RATE) * 1000;
     press_and_hold(duration, container, video, video_info[0].grow_type, [`./${video_info[0].grow_type}.webm`, `./${video_info[0].grow_type}_reversed.webm`]).then(response => {
-        // console.log(response)
+        
     })
 }
 
