@@ -136,6 +136,7 @@ button {
     font-size: 2.5rem;
     cursor: pointer;
     text-align: center;
+    user-select: none;
     transition: transform 2s ease,
                 box-shadow 250ms ease;
 }
@@ -192,6 +193,8 @@ button.embossed, button.debossed {
 
 video {
     width: 70%;
+    /* background: blue; */
+    transform: scale(1.2);
 }
 
 @media (max-width: 85em) {
