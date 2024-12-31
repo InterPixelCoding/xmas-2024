@@ -28,7 +28,7 @@ function el(str, container) {
     return el;
 }
 
-const test = true;
+const test = false;
 
 async function fetch_data(sheet_name, api_key = "AIzaSyAM07AIfBXXRU0Y8MbpzySSVtCAG3xjHr0", link = "https://docs.google.com/spreadsheets/d/1zjRNYIoJHSVrsQmtPnAIGiT7ER851TkQE9bgxqoL86Q/edit?usp=sharing") {
     try {
@@ -108,6 +108,7 @@ function glow(glow_no, els=document.querySelectorAll('.glow')) {
 glow(15);
 
 function activate(el) {el.classList.remove('hidden'); el.classList.add('active');}
+function deactivate(el) {el.classList.add('hidden'); el.classList.remove('active');}
 
 function activate_children(container, except) {
     let items = [];
@@ -148,64 +149,66 @@ function press_and_hold(container, video, srcs) {
 
     const update_button_text = () => {
         const info_span = button.querySelector("span");
-        let span_text = ``;
-        if (srcs[current_video_index].includes("randomise")) {
-            span_text = `Randomise!`;
-        } else {
-            span_text = `Press and hold to grow ${(srcs[current_video_index])}`;
-        }
+        let span_text = srcs[current_video_index].text;
         info_span.textContent = span_text;
     };
 
     const load_video = () => {
-        video.src = `./extracts/${srcs[current_video_index].replace(/ /g, "_")}.webm`;
-        video.addEventListener("loadedmetadata", () => {
-            const duration = video.duration;
+        return new Promise((resolve) => {
+            video.src = `./extracts/${srcs[current_video_index].file}.webm`;
+            video.addEventListener(
+                "loadedmetadata",
+                () => {
+                    const duration = video.duration;
 
-            const handle_intervals = () => {
-                if (holding) {
-                    const increment = (100 / (duration * 1000)) * interval;
-                    update_elapsed(elapsed + increment);
-                    if (video.paused) video.play();
-                } else {
-                    if (!video.paused) video.pause();
+                    const handle_intervals = () => {
+                        if (holding) {
+                            const increment = (100 / (duration * 1000)) * interval;
+                            update_elapsed(elapsed + increment);
+                            if (video.paused) video.play();
+                        } else {
+                            if (!video.paused) video.pause();
+                        }
+                    };
+
+                    main_interval = setInterval(handle_intervals, interval);
+
+                    const start_holding = () => (holding = true);
+                    const stop_holding = () => (holding = false);
+
+                    // Add support for both mouse and touch events
+                    button.addEventListener("mousedown", start_holding);
+                    button.addEventListener("touchstart", start_holding, { passive: true });
+
+                    button.addEventListener("mouseup", stop_holding);
+                    button.addEventListener("mouseleave", stop_holding);
+                    button.addEventListener("touchend", stop_holding, { passive: true });
+                    button.addEventListener("touchcancel", stop_holding, { passive: true });
+                },
+                { once: true }
+            );
+
+            const update_elapsed = (value) => {
+                elapsed = Math.min(Math.max(0, value), 100);
+                button.setAttribute("elapsed", elapsed);
+                button.style.setProperty("--elapsed", `${elapsed}%`);
+                if (elapsed === 100) {
+                    clearInterval(main_interval);
+                    main_interval = null;
+                    current_video_index++;
+                    if (current_video_index < srcs.length) {
+                        elapsed = 0;
+                        update_elapsed(elapsed);
+                        update_button_text();
+                        load_video().then(resolve);
+                    } else {
+                        resolve(); // Resolve when all videos are completed
+                    }
                 }
             };
 
-            main_interval = setInterval(handle_intervals, interval);
-
-            const start_holding = () => (holding = true);
-            const stop_holding = () => (holding = false);
-
-            // Add support for both mouse and touch events
-            button.addEventListener("mousedown", start_holding);
-            button.addEventListener("touchstart", start_holding, { passive: true });
-
-            button.addEventListener("mouseup", stop_holding);
-            button.addEventListener("mouseleave", stop_holding);
-            button.addEventListener("touchend", stop_holding, { passive: true });
-            button.addEventListener("touchcancel", stop_holding, { passive: true });
-        }, { once: true });
-    };
-
-    const update_elapsed = (value) => {
-        elapsed = Math.min(Math.max(0, value), 100);
-        button.setAttribute("elapsed", elapsed);
-        button.style.setProperty("--elapsed", `${elapsed}%`);
-        if (elapsed === 100) {
-            clearInterval(main_interval);
-            main_interval = null;
-            console.log("Completed!");
-            current_video_index++;
-            if (current_video_index < srcs.length) {
-                elapsed = 0;
-                update_elapsed(elapsed);
-                update_button_text();
-                load_video();
-            } else {
-                resolve("All videos completed!");
-            }
-        }
+            update_elapsed(elapsed); // Initialize elapsed update
+        });
     };
 
     return new Promise((resolve) => {
@@ -217,24 +220,23 @@ function press_and_hold(container, video, srcs) {
         container.appendChild(button);
 
         update_button_text();
-        load_video();
+        load_video().then(resolve);
     });
 }
 
-
 function interactive_experience_main(container) {
     const video = document.querySelector('.interactive-container > video');
-    // fix_size(video);
-    let video_srcs = [
-        'the trunk',
-        'the branches',
-        'the smaller branches',
-        'pine needles',
-        'the finishing touches',
-        'randomise'
+    let video_info = [
+        {file: 'the_trunk', text: 'Press and hold to grow the trunk'},
+        {file: 'the_branches', text: 'Press and hold to grow the branches'},
+        {file: 'pine_needles', text: 'Press and hold to grow the pine needles'},
+        {file: 'randomise', text: 'Randomise!'},
+        {file: 'make_it_snow', text: 'Make it snow!'},
     ];
-    press_and_hold(container, video, video_srcs).then(response => {
-        console.log(response);
+    press_and_hold(container, video, video_info).then(() => {
+        deactivate(container);
+        document.body.style.setProperty("--dark-col", "#3a2715");
+        activate(document.querySelector('.thank-you'))
     });
 }
 
