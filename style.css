@@ -90,10 +90,10 @@ h1, h2, h3, p {
     transform: translate(-50%, -50%);
 }
 
-h1 {font-size: 4.5rem; font-weight: 200;}
+h1 {font-size: 4rem; font-weight: 200;}
 
 p {
-    font-size: 1.125rem; 
+    font-size: 1.3rem; 
     font-weight: 100; 
     margin-left: 3px;
     line-height: 1.65rem;
@@ -164,7 +164,10 @@ button.embossed, button.debossed {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 5% 7.5%;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    padding: 2.5%;
 }
 
 .press-and-hold {
@@ -193,14 +196,13 @@ button.embossed, button.debossed {
 
 video {
     width: 70%;
-    /* background: blue; */
-    transform: scale(1.2);
+    max-height: 80%;
 }
 
 @media (max-width: 85em) {
     .neu-panel > * {text-align: center; margin-left: 0;}
     h1 {line-height: 95%; font-size: 3rem;}
-    .neu-panel {
+    .neu-panel.card-container {
         width: 85vw;
         min-width: unset;
     }
@@ -209,7 +211,7 @@ video {
 }
 
 @media (max-width: 35em) {
-    .neu-panel {
+    .neu-panel.card-container {
         padding: 15% 7.5%;
         max-height: 90vh;
         overflow: auto;

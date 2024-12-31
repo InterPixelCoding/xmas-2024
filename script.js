@@ -28,7 +28,7 @@ function el(str, container) {
     return el;
 }
 
-const test = false;
+const test = true;
 
 async function fetch_data(sheet_name, api_key = "AIzaSyAM07AIfBXXRU0Y8MbpzySSVtCAG3xjHr0", link = "https://docs.google.com/spreadsheets/d/1zjRNYIoJHSVrsQmtPnAIGiT7ER851TkQE9bgxqoL86Q/edit?usp=sharing") {
     try {
@@ -127,10 +127,10 @@ function card(container, obj) {
     let promise = Promise.resolve();
     let speed = 1;
     if(test) {speed = 0.02}
+    fix_size(container);
     promise = typewriter(container.querySelector('h1'), `Dear ${obj.Name},`, 100 * speed, 50, 0, promise);
     promise = typewriter(container.querySelector('p'), `${obj.Message} I've coded a present for you! Click the button below to start!`, 30 * speed, 75, 0, promise);
     promise = typewriter(container.querySelector('h3'), null, 100 * speed, 50, 0, promise);
-
     return promise;
 }
 
@@ -149,16 +149,16 @@ function press_and_hold(container, video, srcs) {
     const update_button_text = () => {
         const info_span = button.querySelector("span");
         let span_text = ``;
-        if(Array.from(srcs[current_video_index].split('.')).includes('randomise')) {
+        if (srcs[current_video_index].includes("randomise")) {
             span_text = `Randomise!`;
         } else {
-            span_text = `Press and hold to grow ${(srcs[current_video_index])}`
+            span_text = `Press and hold to grow ${(srcs[current_video_index])}`;
         }
         info_span.textContent = span_text;
     };
 
     const load_video = () => {
-        video.src = `./extracts/${srcs[current_video_index].replace(new RegExp(" ", 'g'), "_")}.webm`;
+        video.src = `./extracts/${srcs[current_video_index].replace(/ /g, "_")}.webm`;
         video.addEventListener("loadedmetadata", () => {
             const duration = video.duration;
 
@@ -174,17 +174,17 @@ function press_and_hold(container, video, srcs) {
 
             main_interval = setInterval(handle_intervals, interval);
 
-            button.addEventListener("mousedown", () => {
-                holding = true;
-            });
+            const start_holding = () => (holding = true);
+            const stop_holding = () => (holding = false);
 
-            button.addEventListener("mouseup", () => {
-                holding = false;
-            });
+            // Add support for both mouse and touch events
+            button.addEventListener("mousedown", start_holding);
+            button.addEventListener("touchstart", start_holding, { passive: true });
 
-            button.addEventListener("mouseleave", () => {
-                holding = false;
-            });
+            button.addEventListener("mouseup", stop_holding);
+            button.addEventListener("mouseleave", stop_holding);
+            button.addEventListener("touchend", stop_holding, { passive: true });
+            button.addEventListener("touchcancel", stop_holding, { passive: true });
         }, { once: true });
     };
 
@@ -221,9 +221,10 @@ function press_and_hold(container, video, srcs) {
     });
 }
 
+
 function interactive_experience_main(container) {
     const video = document.querySelector('.interactive-container > video');
-    fix_size(video);
+    // fix_size(video);
     let video_srcs = [
         'the trunk',
         'the branches',
