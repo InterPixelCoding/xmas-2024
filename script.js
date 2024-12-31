@@ -1,4 +1,15 @@
-// scrollbar animation fix
+// Preload videos
+function preload_videos(video_info) {
+    return video_info.map((video) => {
+        const video_el = document.createElement("video");
+        video_el.src = `./extracts/${video.file}.webm`;
+        video_el.preload = "auto";
+        document.body.appendChild(video_el); // Append to body to ensure it's loaded
+        video_el.style.display = "none"; // Hide the video element
+        return video_el;
+    });
+}
+
 function animation_collision_logic() {
     document.body.style.overflowY = 'hidden';
     setTimeout(() => {
@@ -11,18 +22,18 @@ function el(str, container) {
     let arr = [];
     let el = {};
 
-        try {
-            arr = str.split(',');
-            arr.forEach(function(item, index) {
-                if(index === 0) {
-                    el = document.createElement(item)
-                } else {
-                    el.classList.add(item)
-                }
-            })
-        } catch(err) {
-            el = document.createElement(str);
-        }
+    try {
+        arr = str.split(',');
+        arr.forEach(function(item, index) {
+            if(index === 0) {
+                el = document.createElement(item)
+            } else {
+                el.classList.add(item)
+            }
+        })
+    } catch(err) {
+        el = document.createElement(str);
+    }
 
     if(container) {container.appendChild(el)}
     return el;
@@ -74,9 +85,7 @@ function typewriter(el, str, speed, pause, initial_delay, previous_promise = Pro
             segments.forEach((segment, segment_index) => {
                 segment.split('').forEach((char, char_index) => {
                     setTimeout(() => {
-                        // el.style.height = 'fit-content';
                         el.textContent += char;
-                        // el.style.height = `${el.offsetHeight}px`;
                         if (segment_index === segments.length - 1 && char_index === segment.length - 1) {
                             resolve();
                         }
@@ -241,6 +250,17 @@ function interactive_experience_main(container) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+    let video_info = [
+        {file: 'the_trunk', text: 'Press and hold to grow the trunk'},
+        {file: 'the_branches', text: 'Press and hold to grow the branches'},
+        {file: 'pine_needles', text: 'Press and hold to grow the pine needles'},
+        {file: 'randomise', text: 'Randomise!'},
+        {file: 'make_it_snow', text: 'Make it snow!'},
+    ];
+
+    // Preload videos
+    preload_videos(video_info);
+
     fetch_data("Christmas Cards")
     .then(
         response => {
@@ -277,6 +297,3 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     )
 })
-
-
-

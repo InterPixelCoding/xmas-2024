@@ -139,6 +139,7 @@ button {
     user-select: none;
     transition: transform 2s ease,
                 box-shadow 250ms ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
 button.embossed:hover, button.debossed:hover {
@@ -179,8 +180,8 @@ button.embossed, button.debossed {
     width: fit-content;
     padding: 1.5rem;
     border-radius: 1rem;
-    -webkit-tap-highlight-color: transparent;
 }
+
 
 .press-and-hold > span {z-index: 1;}
 
