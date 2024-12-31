@@ -1,15 +1,4 @@
-// Preload videos
-function preload_videos(video_info) {
-    return video_info.map((video) => {
-        const video_el = document.createElement("video");
-        video_el.src = `./extracts/${video.file}.webm`;
-        video_el.preload = "auto";
-        document.body.appendChild(video_el); // Append to body to ensure it's loaded
-        video_el.style.display = "none"; // Hide the video element
-        return video_el;
-    });
-}
-
+// scrollbar animation fix
 function animation_collision_logic() {
     document.body.style.overflowY = 'hidden';
     setTimeout(() => {
@@ -22,18 +11,18 @@ function el(str, container) {
     let arr = [];
     let el = {};
 
-    try {
-        arr = str.split(',');
-        arr.forEach(function(item, index) {
-            if(index === 0) {
-                el = document.createElement(item)
-            } else {
-                el.classList.add(item)
-            }
-        })
-    } catch(err) {
-        el = document.createElement(str);
-    }
+        try {
+            arr = str.split(',');
+            arr.forEach(function(item, index) {
+                if(index === 0) {
+                    el = document.createElement(item)
+                } else {
+                    el.classList.add(item)
+                }
+            })
+        } catch(err) {
+            el = document.createElement(str);
+        }
 
     if(container) {container.appendChild(el)}
     return el;
@@ -85,7 +74,9 @@ function typewriter(el, str, speed, pause, initial_delay, previous_promise = Pro
             segments.forEach((segment, segment_index) => {
                 segment.split('').forEach((char, char_index) => {
                     setTimeout(() => {
+                        // el.style.height = 'fit-content';
                         el.textContent += char;
+                        // el.style.height = `${el.offsetHeight}px`;
                         if (segment_index === segments.length - 1 && char_index === segment.length - 1) {
                             resolve();
                         }
@@ -233,6 +224,18 @@ function press_and_hold(container, video, srcs) {
     });
 }
 
+function preload_videos(video_info) {
+    const preload_promises = video_info.map(info => {
+        return new Promise(resolve => {
+            const video = document.createElement('video');
+            console.log(video)
+            video.src = `./extracts/${info.file}.webm`;
+            video.addEventListener('loadeddata', resolve, { once: true });
+        });
+    });
+    return Promise.all(preload_promises);
+}
+
 function interactive_experience_main(container) {
     const video = document.querySelector('.interactive-container > video');
     let video_info = [
@@ -258,42 +261,41 @@ window.addEventListener("DOMContentLoaded", () => {
         {file: 'make_it_snow', text: 'Make it snow!'},
     ];
 
-    // Preload videos
-    preload_videos(video_info);
+    preload_videos(video_info).then(() => {
+        fetch_data("Christmas Cards")
+        .then(
+            response => {
+                if(response !== null) {
+                    let obj = {};
+                    let url_arr = window.location.href.split('?=');
+                    response.forEach(item => {
+                        if(item.Key === url_arr[url_arr.length - 1]) {obj = item;}
+                    })
+                    if(obj.Name != null) {
+                        const container = document.querySelector('.card-container');
+                        const button = container.querySelector('button');
+                        
+                        card(container, obj).then(() => {
+                            container.style.animation = 'unset';
+                            container.scrollTop = container.scrollHeight;
+                            fix_size(button);
+                            activate(button);
+                            button.addEventListener("click", () => {
+                                container.classList.add('hidden');
+                                document.body.style.setProperty("--dark-col", "#111413");
 
-    fetch_data("Christmas Cards")
-    .then(
-        response => {
-            if(response !== null) {
-                let obj = {};
-                let url_arr = window.location.href.split('?=');
-                response.forEach(item => {
-                    if(item.Key === url_arr[url_arr.length - 1]) {obj = item;}
-                })
-                if(obj.Name != null) {
-                    const container = document.querySelector('.card-container');
-                    const button = container.querySelector('button');
-                    
-                    card(container, obj).then(() => {
-                        container.style.animation = 'unset';
-                        container.scrollTop = container.scrollHeight;
-                        fix_size(button);
-                        activate(button);
-                        button.addEventListener("click", () => {
-                            container.classList.add('hidden');
-                            document.body.style.setProperty("--dark-col", "#111413");
-
-                            const interactive_container = document.querySelector('.interactive-container');
-                            activate(interactive_container);
-                            interactive_experience_main(interactive_container);
-                        })
-                    });
+                                const interactive_container = document.querySelector('.interactive-container');
+                                activate(interactive_container);
+                                interactive_experience_main(interactive_container);
+                            })
+                        });
+                    } else {
+                        error();
+                    }
                 } else {
                     error();
                 }
-            } else {
-                error();
             }
-        }
-    )
-})
+        )
+    });
+});
