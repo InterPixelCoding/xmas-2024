@@ -3,7 +3,7 @@ function animation_collision_logic() {
     document.body.style.overflowY = 'hidden';
     setTimeout(() => {
         document.body.style.overflowY = 'auto';
-    }, 2000);
+    }, 3000);
 }
 
 function el(str, container) {
@@ -231,11 +231,9 @@ function preload_videos(video_info) {
             video.src = `./extracts/${info.file}.webm`;
 
             // Apply styles to hide the video
+            video.style.width = "0px";
+            video.style.height = "0px";
             video.style.position = 'absolute';
-            video.style.top = '0';
-            video.style.left = '0';
-            video.style.width = '1px';
-            video.style.height = '1px';
             video.style.opacity = '0';
             video.style.pointerEvents = 'none';
             video.style.zIndex = '-1';
@@ -288,10 +286,10 @@ function interactive_experience_main(container) {
 window.addEventListener("DOMContentLoaded", () => {
     let video_info = [
         {file: 'the_trunk', text: 'Press and hold to grow the trunk'},
-        {file: 'the_branches', text: 'Press and hold to grow the branches'},
-        {file: 'pine_needles', text: 'Press and hold to grow the pine needles'},
-        {file: 'randomise', text: 'Randomise!'},
-        {file: 'make_it_snow', text: 'Make it snow!'},
+        // {file: 'the_branches', text: 'Press and hold to grow the branches'},
+        // {file: 'pine_needles', text: 'Press and hold to grow the pine needles'},
+        // {file: 'randomise', text: 'Randomise!'},
+        // {file: 'make_it_snow', text: 'Make it snow!'},
     ];
 
     preload_videos(video_info).then(() => {
@@ -301,9 +299,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 if(response !== null) {
                     let obj = {};
                     let url_arr = window.location.href.split('?=');
-                    response.forEach(item => {
-                        if(item.Key === url_arr[url_arr.length - 1]) {obj = item;}
-                    })
+                    response.forEach(item => {if(item.Key === url_arr[url_arr.length - 1]) {obj = item;}})
                     if(obj.Name != null) {
                         const container = document.querySelector('.card-container');
                         const button = container.querySelector('button');
@@ -332,3 +328,4 @@ window.addEventListener("DOMContentLoaded", () => {
         )
     });
 });
+
