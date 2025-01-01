@@ -29,6 +29,7 @@ function el(str, container) {
 }
 
 const test = false;
+const compress_videos = true;
 
 async function fetch_data(sheet_name, api_key = "AIzaSyAM07AIfBXXRU0Y8MbpzySSVtCAG3xjHr0", link = "https://docs.google.com/spreadsheets/d/1zjRNYIoJHSVrsQmtPnAIGiT7ER851TkQE9bgxqoL86Q/edit?usp=sharing") {
     try {
@@ -155,7 +156,8 @@ function press_and_hold(container, video, srcs) {
 
     const load_video = () => {
         return new Promise((resolve) => {
-            video.src = `./extracts/${srcs[current_video_index].file}.webm`;
+            let folder = "extracts";
+            video.src = `./${folder}/${srcs[current_video_index].file}.webm`;
             video.addEventListener(
                 "loadedmetadata",
                 () => {
@@ -228,8 +230,9 @@ function preload_videos(video_info) {
     const preload_promises = video_info.map(info => {
         return new Promise(resolve => {
             const video = document.createElement('video');
-            video.src = `./extracts/${info.file}.webm`;
-
+            let suffix = "";
+            if(compress_videos) {suffix = "_compressed"};
+            video.src = `./extracts/${info.file}${suffix}.webm`;
             // Apply styles to hide the video
             video.style.width = "0px";
             video.style.height = "0px";
@@ -286,10 +289,10 @@ function interactive_experience_main(container) {
 window.addEventListener("DOMContentLoaded", () => {
     let video_info = [
         {file: 'the_trunk', text: 'Press and hold to grow the trunk'},
-        // {file: 'the_branches', text: 'Press and hold to grow the branches'},
-        // {file: 'pine_needles', text: 'Press and hold to grow the pine needles'},
-        // {file: 'randomise', text: 'Randomise!'},
-        // {file: 'make_it_snow', text: 'Make it snow!'},
+        {file: 'the_branches', text: 'Press and hold to grow the branches'},
+        {file: 'pine_needles', text: 'Press and hold to grow the pine needles'},
+        {file: 'randomise', text: 'Randomise!'},
+        {file: 'make_it_snow', text: 'Make it snow!'},
     ];
 
     preload_videos(video_info).then(() => {
