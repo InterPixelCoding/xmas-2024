@@ -228,13 +228,46 @@ function preload_videos(video_info) {
     const preload_promises = video_info.map(info => {
         return new Promise(resolve => {
             const video = document.createElement('video');
-            console.log(video)
             video.src = `./extracts/${info.file}.webm`;
-            video.addEventListener('loadeddata', resolve, { once: true });
+
+            // Apply styles to hide the video
+            video.style.position = 'absolute';
+            video.style.top = '0';
+            video.style.left = '0';
+            video.style.width = '1px';
+            video.style.height = '1px';
+            video.style.opacity = '0';
+            video.style.pointerEvents = 'none';
+            video.style.zIndex = '-1';
+
+            console.log(`Started preloading video: ${info.file}`);
+
+            // Wait for the video to buffer enough to play through
+            video.addEventListener('canplaythrough', () => {
+                console.log(`Successfully preloaded video: ${info.file}`);
+                resolve();
+            }, { once: true });
+
+            // Handle errors during preloading
+            video.addEventListener('error', (e) => {
+                console.error(`Failed to preload video: ${info.file}`, e);
+                resolve(); // Resolve even on error to avoid blocking
+            });
+
+            // Append the video to the document for preloading
+            document.body.appendChild(video);
+            video.load();
         });
     });
-    return Promise.all(preload_promises);
+
+    console.log('Waiting for all videos to preload...');
+    return Promise.all(preload_promises).then(() => {
+        console.log('All videos preloaded successfully!');
+    }).catch(error => {
+        console.error('Error during video preloading:', error);
+    });
 }
+
 
 function interactive_experience_main(container) {
     const video = document.querySelector('.interactive-container > video');
