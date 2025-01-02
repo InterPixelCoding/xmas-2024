@@ -356,7 +356,7 @@ function loading() {
         const button = el("button,embossed");
 
         const audio = el("audio");
-        audio.src = `./music_1.mp3`;
+        audio.src = `./music.m4a`;
         button.onclick = () => {audio.play()}
 
         button.textContent = "Click to start music";
@@ -384,12 +384,14 @@ window.addEventListener("DOMContentLoaded", () => {
     card_container.appendChild(loading_container);
 
     preload_videos(video_info).then(() => {
-        loading_container.remove();
-        card_main(card_container)
-        .then(() => {
-            activate(interactive_container);
-            interactive_experience_main(interactive_container, video_info);
-        })
+        setTimeout(() => {
+            loading_container.remove();
+            card_main(card_container)
+            .then(() => {
+                activate(interactive_container);
+                interactive_experience_main(interactive_container, video_info);
+            })
+        }, 2000);
     });
 });
 
