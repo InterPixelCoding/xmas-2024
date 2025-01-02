@@ -29,7 +29,7 @@ function el(str, container) {
 }
 
 const test = true;
-const compress_videos = true;
+const compress_videos = false;
 
 async function fetch_data(sheet_name, api_key = "AIzaSyAM07AIfBXXRU0Y8MbpzySSVtCAG3xjHr0", link = "https://docs.google.com/spreadsheets/d/1zjRNYIoJHSVrsQmtPnAIGiT7ER851TkQE9bgxqoL86Q/edit?usp=sharing") {
     try {
@@ -136,6 +136,69 @@ function card(container, obj) {
     return promise;
 }
 
+function preload_videos(video_info) {
+    const preload_promises = video_info.map(info => {
+        return new Promise(resolve => {
+            const xhrReq = new XMLHttpRequest();
+            let suffix = "";
+            if (compress_videos) { suffix = "_compressed"; }
+
+            xhrReq.open('GET', `./extracts/${info.file}${suffix}.webm`, true);
+            xhrReq.responseType = 'blob';
+
+            xhrReq.onload = function () {
+                if (this.status === 200) {
+                    console.log(`Successfully loaded video: ${info.file}`);
+                    const videoBlob = URL.createObjectURL(this.response);
+
+                    // Create a video element to validate transparency support
+                    const tempVideo = document.createElement('video');
+                    tempVideo.src = videoBlob;
+                    tempVideo.addEventListener('loadedmetadata', () => {
+                        if (tempVideo.videoWidth && tempVideo.videoHeight) {
+                            // Assuming transparency is present in the video encoding
+                            info.loadedSrc = videoBlob; // Save the loaded source
+                            console.log(`Validated VP9 WebM for ${info.file}`);
+                        } else {
+                            console.warn(`Transparency not supported for ${info.file}`);
+                        }
+                        resolve();
+                    }, { once: true });
+
+                    tempVideo.addEventListener('error', () => {
+                        console.error(`Failed to validate VP9 WebM for ${info.file}`);
+                        resolve(); // Resolve even on failure to avoid blocking
+                    });
+                } else {
+                    console.error(`Failed to load video: ${info.file}`, this.status);
+                    resolve(); // Resolve even on failure to avoid blocking
+                }
+            };
+
+            xhrReq.onerror = function () {
+                console.error(`Error loading video: ${info.file}`);
+                resolve(); // Resolve to avoid blocking on error
+            };
+
+            xhrReq.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percentComplete = ((e.loaded / e.total) * 100 | 0) + '%';
+                    console.log(`Loading ${info.file}: ${percentComplete}`);
+                }
+            };
+
+            xhrReq.send();
+        });
+    });
+
+    console.log('Waiting for all videos to preload...');
+    return Promise.all(preload_promises).then(() => {
+        console.log('All videos preloaded successfully!');
+    }).catch(error => {
+        console.error('Error during video preloading:', error);
+    });
+}
+
 function press_and_hold(container, video, srcs) {
     let holding = false,
         elapsed = 0,
@@ -150,14 +213,24 @@ function press_and_hold(container, video, srcs) {
 
     const update_button_text = () => {
         const info_span = button.querySelector("span");
-        let span_text = srcs[current_video_index].text;
-        info_span.textContent = span_text;
+        const current_src = srcs[current_video_index];
+        if (current_src) {
+            info_span.textContent = current_src.text || "Press and hold!";
+        } else {
+            info_span.textContent = "No more videos!";
+        }
     };
 
     const load_video = () => {
         return new Promise((resolve) => {
-            let folder = "extracts";
-            video.src = `./${folder}/${srcs[current_video_index].file}.webm`;
+            const currentSrc = srcs[current_video_index]?.loadedSrc; // Use preloaded source
+            if (!currentSrc) {
+                console.error(`Video source not preloaded: ${srcs[current_video_index]?.file}`);
+                resolve();
+                return;
+            }
+
+            video.src = currentSrc;
             video.addEventListener(
                 "loadedmetadata",
                 () => {
@@ -178,7 +251,6 @@ function press_and_hold(container, video, srcs) {
                     const start_holding = () => (holding = true);
                     const stop_holding = () => (holding = false);
 
-                    // Add support for both mouse and touch events
                     button.addEventListener("mousedown", start_holding);
                     button.addEventListener("touchstart", start_holding, { passive: true });
 
@@ -226,75 +298,8 @@ function press_and_hold(container, video, srcs) {
     });
 }
 
-function preload_videos(video_info) {
-    const preload_promises = video_info.map(info => {
-        return new Promise(resolve => {
-            const xhrReq = new XMLHttpRequest();
-            let suffix = "";
-            if (compress_videos) { suffix = "_compressed"; }
-
-            xhrReq.open('GET', `./extracts/${info.file}${suffix}.webm`, true);
-            xhrReq.responseType = 'blob';
-
-            xhrReq.onload = function () {
-                if (this.status === 200) {
-                    console.log(`Successfully loaded video: ${info.file}`);
-                    const video = document.createElement('video');
-                    const vid = URL.createObjectURL(this.response);
-
-                    // Apply styles to hide the video
-                    video.style.width = "0px";
-                    video.style.height = "0px";
-                    video.style.position = 'absolute';
-                    video.style.opacity = '0';
-                    video.style.pointerEvents = 'none';
-                    video.style.zIndex = '-1';
-
-                    video.src = vid;
-                    video.load();
-                    document.body.appendChild(video);
-                    resolve();
-                } else {
-                    console.error(`Failed to load video: ${info.file}`, this.status);
-                    resolve(); // Resolve even on failure to avoid blocking
-                }
-            };
-
-            xhrReq.onerror = function () {
-                console.error(`Error loading video: ${info.file}`);
-                resolve(); // Resolve to avoid blocking on error
-            };
-
-            xhrReq.onprogress = function (e) {
-                if (e.lengthComputable) {
-                    const percentComplete = ((e.loaded / e.total) * 100 | 0) + '%';
-                    console.log(`Loading ${info.file}: ${percentComplete}`);
-                }
-            };
-
-            xhrReq.send();
-        });
-    });
-
-    console.log('Waiting for all videos to preload...');
-    return Promise.all(preload_promises).then(() => {
-        console.log('All videos preloaded successfully!');
-    }).catch(error => {
-        console.error('Error during video preloading:', error);
-    });
-}
-
-
-
-function interactive_experience_main(container) {
+function interactive_experience_main(container, video_info) {
     const video = document.querySelector('.interactive-container > video');
-    let video_info = [
-        {file: 'the_trunk', text: 'Press and hold to grow the trunk'},
-        {file: 'the_branches', text: 'Press and hold to grow the branches'},
-        {file: 'pine_needles', text: 'Press and hold to grow the pine needles'},
-        {file: 'randomise', text: 'Randomise!'},
-        {file: 'make_it_snow', text: 'Make it snow!'},
-    ];
     press_and_hold(container, video, video_info).then(() => {
         deactivate(container);
         document.body.style.setProperty("--dark-col", "#3a2715");
@@ -339,7 +344,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
                                 const interactive_container = document.querySelector('.interactive-container');
                                 activate(interactive_container);
-                                interactive_experience_main(interactive_container);
+                                interactive_experience_main(interactive_container, video_info);
                             })
                         });
                     } else {

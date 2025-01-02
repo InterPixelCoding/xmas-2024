@@ -202,6 +202,7 @@ video {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+    background-color: transparent;
     height: 80%;
 }
 
