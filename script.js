@@ -303,12 +303,73 @@ function interactive_experience_main(container, video_info) {
     const video = document.querySelector('.interactive-container > video');
     press_and_hold(container, video, video_info).then(() => {
         deactivate(container);
-        document.body.style.setProperty("--dark-col", "#3a2715");
+        document.body.style.setProperty("--dark-col", "#291c1c");
         activate(document.querySelector('.thank-you'))
     });
 }
 
-const container = document.querySelector('.card-container');
+function card_main(container) {
+    return new Promise((resolve, reject) => {
+        fetch_data("Christmas Cards")
+        .then(
+            response => {
+                if (response !== null) {
+                    let obj = {};
+                    let url_arr = window.location.href.split('?=');
+                    response.forEach(item => {
+                        if (item.Key === url_arr[url_arr.length - 1]) {
+                            obj = item;
+                        }
+                    });
+                    if (obj.Name != null) {
+                        const button = container.querySelector('button');
+                        
+                        card(container, obj).then(() => {
+                            container.style.animation = 'unset';
+                            card_container.style.overflowY = 'auto';
+
+                            container.scrollTop = container.scrollHeight;
+                            fix_size(button);
+                            activate(button);
+                            button.addEventListener("click", () => {
+                                container.classList.add('hidden');
+                                document.body.style.setProperty("--dark-col", "#111413");
+                                resolve();
+                            });
+                        }).catch(reject);
+                    } else {
+                        error();
+                        reject("Error: Object not found.");
+                    }
+                } else {
+                    error();
+                    reject("Error: Response is null.");
+                }
+            }
+        ).catch(reject);
+    });
+}
+
+function loading() {
+    const loading_container = el("div, loading-container");
+        const loading = el("img, loading,active");
+        const button = el("button,embossed");
+
+        const audio = el("audio");
+        audio.src = `./music_1.mp3`;
+        button.onclick = () => {audio.play()}
+
+        button.textContent = "Click to start music";
+        loading.src = './loading.png';
+    loading_container.appendChild(loading);
+    loading_container.appendChild(button);
+
+    return loading_container;
+}
+
+
+const card_container = document.querySelector('.card-container');
+const interactive_container = document.querySelector('.interactive-container');
 
 window.addEventListener("DOMContentLoaded", () => {
     let video_info = [
@@ -319,43 +380,16 @@ window.addEventListener("DOMContentLoaded", () => {
         {file: 'make_it_snow', text: 'Make it snow!'},
     ];
 
-    const loading = el("img, loading,active");
-    loading.src = './loading.png';
-    container.appendChild(loading);
-    preload_videos(video_info).then(() => {
-        loading.remove();
-        fetch_data("Christmas Cards")
-        .then(
-            response => {
-                if(response !== null) {
-                    let obj = {};
-                    let url_arr = window.location.href.split('?=');
-                    response.forEach(item => {if(item.Key === url_arr[url_arr.length - 1]) {obj = item;}})
-                    if(obj.Name != null) {
-                        const button = container.querySelector('button');
-                        
-                        card(container, obj).then(() => {
-                            container.style.animation = 'unset';
-                            container.scrollTop = container.scrollHeight;
-                            fix_size(button);
-                            activate(button);
-                            button.addEventListener("click", () => {
-                                container.classList.add('hidden');
-                                document.body.style.setProperty("--dark-col", "#111413");
+    const loading_container = loading();
+    card_container.appendChild(loading_container);
 
-                                const interactive_container = document.querySelector('.interactive-container');
-                                activate(interactive_container);
-                                interactive_experience_main(interactive_container, video_info);
-                            })
-                        });
-                    } else {
-                        error();
-                    }
-                } else {
-                    error();
-                }
-            }
-        )
+    preload_videos(video_info).then(() => {
+        loading_container.remove();
+        card_main(card_container)
+        .then(() => {
+            activate(interactive_container);
+            interactive_experience_main(interactive_container, video_info);
+        })
     });
 });
 

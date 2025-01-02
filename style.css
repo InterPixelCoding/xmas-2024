@@ -210,11 +210,26 @@ video {
     font-size: 3rem;
 }
 
-.loading {
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5vh;
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(0deg);
+    transform: translate(-50%, -50%);
+}
+
+.loading-container > button {
+    font-size: 1.25rem;
+    padding: 7.5%;
+    border-radius: 1rem;
+}
+
+.loading {
+    transform: rotate(0deg);
     width: 5vw;
     min-width: 4rem;
     aspect-ratio: 1 / 1;
@@ -235,7 +250,6 @@ video {
     .neu-panel.card-container {
         padding: 15% 7.5%;
         max-height: 90vh;
-        overflow: auto;
         scroll-behavior: smooth;
     }
     .glowing-source {
@@ -263,7 +277,7 @@ video {
 }
 
 @keyframes loading {
-    to {transform: translate(-50%, -50%) rotate(360deg);}
+    to {transform: rotate(360deg);}
 }
 
 @keyframes glow-move {
@@ -289,5 +303,3 @@ video {
     }
     
 }
-
-/* ffmpeg -i the_trunk.webm -vf "crop=1190:1080:365:0" -c:v libvpx-vp9 -pix_fmt rgba -crf 30 -b:v 0 ../extracts_cropped/the_trunk.webm */
