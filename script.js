@@ -28,7 +28,7 @@ function el(str, container) {
     return el;
 }
 
-const test = true;
+const test = false;
 const compress_videos = false;
 
 async function fetch_data(sheet_name, api_key = "AIzaSyAM07AIfBXXRU0Y8MbpzySSVtCAG3xjHr0", link = "https://docs.google.com/spreadsheets/d/1zjRNYIoJHSVrsQmtPnAIGiT7ER851TkQE9bgxqoL86Q/edit?usp=sharing") {
