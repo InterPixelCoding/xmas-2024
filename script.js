@@ -28,7 +28,7 @@ function el(str, container) {
     return el;
 }
 
-const test = false;
+const test = true;
 const compress_videos = true;
 
 async function fetch_data(sheet_name, api_key = "AIzaSyAM07AIfBXXRU0Y8MbpzySSVtCAG3xjHr0", link = "https://docs.google.com/spreadsheets/d/1zjRNYIoJHSVrsQmtPnAIGiT7ER851TkQE9bgxqoL86Q/edit?usp=sharing") {
@@ -302,6 +302,8 @@ function interactive_experience_main(container) {
     });
 }
 
+const container = document.querySelector('.card-container');
+
 window.addEventListener("DOMContentLoaded", () => {
     let video_info = [
         {file: 'the_trunk', text: 'Press and hold to grow the trunk'},
@@ -311,7 +313,11 @@ window.addEventListener("DOMContentLoaded", () => {
         {file: 'make_it_snow', text: 'Make it snow!'},
     ];
 
+    const loading = el("img, loading,active");
+    loading.src = './loading.png';
+    container.appendChild(loading);
     preload_videos(video_info).then(() => {
+        loading.remove();
         fetch_data("Christmas Cards")
         .then(
             response => {
@@ -320,7 +326,6 @@ window.addEventListener("DOMContentLoaded", () => {
                     let url_arr = window.location.href.split('?=');
                     response.forEach(item => {if(item.Key === url_arr[url_arr.length - 1]) {obj = item;}})
                     if(obj.Name != null) {
-                        const container = document.querySelector('.card-container');
                         const button = container.querySelector('button');
                         
                         card(container, obj).then(() => {
