@@ -143,7 +143,7 @@ function preload_videos(video_info) {
             let suffix = "";
             if (compress_videos) { suffix = "_compressed"; }
 
-            xhrReq.open('GET', `./extracts/${info.file}${suffix}.webm`, true);
+            xhrReq.open('GET', `./extracts_h264/${info.file}${suffix}.mp4`, true);
             xhrReq.responseType = 'blob';
 
             xhrReq.onload = function () {
@@ -158,7 +158,7 @@ function preload_videos(video_info) {
                         if (tempVideo.videoWidth && tempVideo.videoHeight) {
                             // Assuming transparency is present in the video encoding
                             info.loadedSrc = videoBlob; // Save the loaded source
-                            console.log(`Validated VP9 WebM for ${info.file}`);
+                            console.log(`Validated MP4 for ${info.file}`);
                         } else {
                             console.warn(`Transparency not supported for ${info.file}`);
                         }
@@ -166,7 +166,7 @@ function preload_videos(video_info) {
                     }, { once: true });
 
                     tempVideo.addEventListener('error', () => {
-                        console.error(`Failed to validate VP9 WebM for ${info.file}`);
+                        console.error(`Failed to validate MP4 for ${info.file}`);
                         resolve(); // Resolve even on failure to avoid blocking
                     });
                 } else {
@@ -198,6 +198,7 @@ function preload_videos(video_info) {
         console.error('Error during video preloading:', error);
     });
 }
+
 
 function press_and_hold(container, video, srcs) {
     let holding = false,
