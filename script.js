@@ -30,6 +30,7 @@ function el(str, container) {
 
 const test = false;
 const compress_videos = false;
+let mobile = document.body.offsetWidth < document.body.offsetHeight;
 
 async function fetch_data(sheet_name, api_key = "AIzaSyAM07AIfBXXRU0Y8MbpzySSVtCAG3xjHr0", link = "https://docs.google.com/spreadsheets/d/1zjRNYIoJHSVrsQmtPnAIGiT7ER851TkQE9bgxqoL86Q/edit?usp=sharing") {
     try {
@@ -326,7 +327,7 @@ function card_main(container) {
                         
                         card(container, obj).then(() => {
                             container.style.animation = 'unset';
-                            card_container.style.overflowY = 'auto';
+                            if(mobile) {card_container.style.overflowY = 'auto';}
 
                             container.scrollTop = container.scrollHeight;
                             fix_size(button);
