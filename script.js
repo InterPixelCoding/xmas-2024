@@ -229,35 +229,50 @@ function press_and_hold(container, video, srcs) {
 function preload_videos(video_info) {
     const preload_promises = video_info.map(info => {
         return new Promise(resolve => {
-            const video = document.createElement('video');
+            const xhrReq = new XMLHttpRequest();
             let suffix = "";
-            if(compress_videos) {suffix = "_compressed"};
-            video.src = `./extracts/${info.file}${suffix}.webm`;
-            // Apply styles to hide the video
-            video.style.width = "0px";
-            video.style.height = "0px";
-            video.style.position = 'absolute';
-            video.style.opacity = '0';
-            video.style.pointerEvents = 'none';
-            video.style.zIndex = '-1';
+            if (compress_videos) { suffix = "_compressed"; }
 
-            console.log(`Started preloading video: ${info.file}`);
+            xhrReq.open('GET', `./extracts/${info.file}${suffix}.webm`, true);
+            xhrReq.responseType = 'blob';
 
-            // Wait for the video to buffer enough to play through
-            video.addEventListener('canplaythrough', () => {
-                console.log(`Successfully preloaded video: ${info.file}`);
-                resolve();
-            }, { once: true });
+            xhrReq.onload = function () {
+                if (this.status === 200) {
+                    console.log(`Successfully loaded video: ${info.file}`);
+                    const video = document.createElement('video');
+                    const vid = URL.createObjectURL(this.response);
 
-            // Handle errors during preloading
-            video.addEventListener('error', (e) => {
-                console.error(`Failed to preload video: ${info.file}`, e);
-                resolve(); // Resolve even on error to avoid blocking
-            });
+                    // Apply styles to hide the video
+                    video.style.width = "0px";
+                    video.style.height = "0px";
+                    video.style.position = 'absolute';
+                    video.style.opacity = '0';
+                    video.style.pointerEvents = 'none';
+                    video.style.zIndex = '-1';
 
-            // Append the video to the document for preloading
-            document.body.appendChild(video);
-            video.load();
+                    video.src = vid;
+                    video.load();
+                    document.body.appendChild(video);
+                    resolve();
+                } else {
+                    console.error(`Failed to load video: ${info.file}`, this.status);
+                    resolve(); // Resolve even on failure to avoid blocking
+                }
+            };
+
+            xhrReq.onerror = function () {
+                console.error(`Error loading video: ${info.file}`);
+                resolve(); // Resolve to avoid blocking on error
+            };
+
+            xhrReq.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percentComplete = ((e.loaded / e.total) * 100 | 0) + '%';
+                    console.log(`Loading ${info.file}: ${percentComplete}`);
+                }
+            };
+
+            xhrReq.send();
         });
     });
 
@@ -268,6 +283,7 @@ function preload_videos(video_info) {
         console.error('Error during video preloading:', error);
     });
 }
+
 
 
 function interactive_experience_main(container) {
